@@ -43,7 +43,7 @@
      <item>
       <widget class="QLineEdit" name="XMLEdit">
        <property name="text">
-        <string>/home/lin2/big/rutr/backup.20170916154625.xml</string>
+        <string/>
        </property>
       </widget>
      </item>
@@ -134,7 +134,11 @@
     </widget>
    </item>
    <item>
-    <widget class="QPlainTextEdit" name="logTextEdit"/>
+    <widget class="QPlainTextEdit" name="logTextEdit">
+     <property name="readOnly">
+      <bool>true</bool>
+     </property>
+    </widget>
    </item>
    <item>
     <widget class="QCheckBox" name="isTestCheckBox">

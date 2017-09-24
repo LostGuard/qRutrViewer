@@ -45,6 +45,6 @@ void TableModel::slotSearchFinished(QList<RuTrItem *> *items)
     qDeleteAll(m_RootItems);
     m_RootItems.clear();
     m_RootItems.append(*items);
-    delete items;
+    delete items;// delete list but not the items inside
     endResetModel();
 }

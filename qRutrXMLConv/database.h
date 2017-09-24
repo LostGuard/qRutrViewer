@@ -18,7 +18,7 @@ public:
     void sync();
     void saveForums(QMap<int, QString>& map);
 
-    void Search(QList<RuTrItem*>* result, QStringList& keyWords, int start, int end, int categoryId = -1);
+    void Search(QList<RuTrItem*>* result, QStringList& keyWords, int offset, int count, int categoryId = -1);
     QString GetContent(RuTrItem* item);
     void resetData();
     QMap<int, QString> getCategories();

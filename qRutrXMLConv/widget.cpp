@@ -39,7 +39,8 @@ void Widget::on_startButton_clicked()
         return;
     }
 
-    QFile* file = new QFile("/home/lin2/big/rutr/backup.20170916154625.xml");
+    //QFile* file = new QFile("/home/lin2/big/rutr/backup.20170916154625.xml");
+    QFile* file = new QFile(ui->XMLEdit->text());
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
         QMessageBox::critical(this, "Ошибка инициализации", "Невозможно открыть XML файл");
@@ -55,7 +56,7 @@ void Widget::on_startButton_clicked()
         fastDel = false;
     }
     else
-        db->setWriteMode(ui->baseDataCheckBox, ui->contentCheckBox, ui->categoryCheckBox);
+        db->setWriteMode(ui->baseDataCheckBox->isChecked(), ui->contentCheckBox->isChecked(), ui->categoryCheckBox->isChecked());
 
     if (!db->init(fastDel))
     {
@@ -65,7 +66,7 @@ void Widget::on_startButton_clicked()
     db->resetData();
 
     m_timer = new QTimer();
-    m_timer->setInterval(3000);
+    m_timer->setInterval(2000);
 
     m_worker = new Worker(db, file);
     connect(m_worker, SIGNAL(signalAppendToLog(QString)), this, SLOT(slotAppendToLog(QString)));

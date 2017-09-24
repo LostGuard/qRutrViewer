@@ -2,7 +2,7 @@
 #include <QVariantList>
 #include <QDir>
 #include <QFile>
-
+#include <QSqlError>
 
 
 DataBase::DataBase()
@@ -59,12 +59,12 @@ bool DataBase::init(bool fastClearDb)
     m_content_db.setDatabaseName(m_dbpath + CON_CONTENT_DB_NAME);
 
     if (!m_base_db.open()) {
-        errorString += "open base db error";
+        errorString += "open base db error" + m_base_db.lastError().text();
         return false;
     }
 
     if (!m_content_db.open()) {
-        errorString += "open content db error";
+        errorString += "open content db error" + m_base_db.lastError().text();
         return false;
     }
 
@@ -162,7 +162,7 @@ void DataBase::saveForums(QMap<int, QString>& map)
     m_QueryBase->exec("END TRANSACTION");
 }
 
-void DataBase::Search(QList<RuTrItem*>* result, QStringList& keyWords, int start, int end, int categoryId)
+void DataBase::Search(QList<RuTrItem*>* result, QStringList& keyWords, int offset, int count, int categoryId)
 {
     m_QueryBase->clear();
     QString cmd = "SELECT * FROM " + CON_BASE_TABLE_NAME;
@@ -178,7 +178,7 @@ void DataBase::Search(QList<RuTrItem*>* result, QStringList& keyWords, int start
         str = str.left(str.count() - 4); // remove last 'and'
 
     str += " ORDER BY id ";
-    str += "LIMIT " + QString::number(start) + "," + QString::number(end);
+    str += "LIMIT " + QString::number(offset) + "," + QString::number(count);
     cmd += str;
 
     m_QueryBase->prepare(cmd);
@@ -220,7 +220,12 @@ void DataBase::resetData()
 QMap<int, QString> DataBase::getCategories()
 {
     QMap<int, QString> res;
-    res.insert(2, "Кино, Видео и ТВ");
+    m_QueryBase->clear();
+    QString cmd = "SELECT * FROM " + CON_CAT_TABLE_NAME;
+    m_QueryBase->prepare(cmd);
+    m_QueryBase->exec();
+    while (m_QueryBase->next())
+        res.insert(m_QueryBase->value(0).toInt(), m_QueryBase->value(1).toString());
     return res;
 }
 

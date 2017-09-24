@@ -2,10 +2,12 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QMenu>
 
 #include "tablemodel.h"
 #include "itemviewform.h"
 #include "../qRutrXMLConv/database.h"
+#include "categorydelegate.h"
 
 namespace Ui {
 class MainWindow;
@@ -22,11 +24,20 @@ public:
 private slots:
     void on_searchButton_clicked();
     void slotShowItem();
-
+    void slotTableCustomMenuRequested(QPoint);
+    
     void on_prevButton_clicked();
 
     void on_nextButton_clicked();
 
+    void on_actionView_triggered();
+    
+    void on_actionCopy_triggered();
+    
+    void on_actionCopyFull_triggered();
+    
+    void on_actionCopyHash_triggered();
+    
 signals:
     void signalSearchFinished(QList<RuTrItem*>* items);
 

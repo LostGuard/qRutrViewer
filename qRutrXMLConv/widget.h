@@ -32,7 +32,7 @@ public slots:
 private:
     Ui::Widget *ui;
     Worker *m_worker;
-    bool m_isStarted;
+    bool m_isStarted = false;
     QTimer* m_timer;
 
 signals:
