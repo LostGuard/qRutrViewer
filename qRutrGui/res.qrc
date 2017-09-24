@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/icons">
+        <file>index.ajax-spinner-preloader.gif</file>
+    </qresource>
+</RCC>

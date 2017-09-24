@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(this, SIGNAL(signalSearchFinished(QList<RuTrItem*>*)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
     connect(ui->tableView,SIGNAL(doubleClicked(QModelIndex)), this, SLOT(slotShowItem()));
 
-    categoryDelegate *delegate = new categoryDelegate();
+    CategoryDelegate *delegate = new CategoryDelegate();
     ui->tableView->setItemDelegateForColumn(0, delegate);
     ui->tableView->setModel(m_Model);
     
@@ -57,12 +57,32 @@ void MainWindow::startSearch()
 {
     QString cmd;
     QList<RuTrItem*>* items = new QList<RuTrItem*>();
-    QStringList kwlist = ui->searchEdit->text().split(" ");
+    QStringList *kwlist = new QStringList();
+    *kwlist = ui->searchEdit->text().split(" ");
     if (!ui->searchEdit->text().isEmpty())
     {
-        m_db->Search(items, kwlist, m_SearchStartIndex, m_MaxItemsView,
-                     ui->categoryComboBox->currentData().toInt());
-        emit signalSearchFinished(items);
+        QMovie *movie = new QMovie(":/icons/index.ajax-spinner-preloader.gif");
+        m_progressLabel = new QLabel(this);
+
+        m_progressLabel->setAttribute(Qt::WA_DeleteOnClose);
+        m_progressLabel->setWindowFlags(Qt::SplashScreen);
+        m_progressLabel->setAutoFillBackground(false);
+        m_progressLabel->setAttribute(Qt::WA_TranslucentBackground);
+        m_progressLabel->setAttribute(Qt::WA_NoSystemBackground);
+        this->setEnabled(false);
+        //progressLabel->setGeometry(this->geometry().topLeft().x()+20, this->geometry().topLeft().y()+160, 550, 350);
+        //progressLabel->setFixedHeight(350);
+        //progressLabel->setFixedWidth(550);
+
+        m_progressLabel->setMovie(movie);
+        movie->start();
+        m_progressLabel->show();
+
+        DataBaseWorker *wk = new DataBaseWorker(m_db, kwlist, 0, m_MaxItemsView, ui->categoryComboBox->currentData().toInt());
+        connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
+        connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), this, SLOT(slotSearchFinished()));
+        connect(wk, SIGNAL(finished()), wk, SLOT(deleteLater()));
+        wk->start();
     }
 }
 
@@ -88,6 +108,12 @@ void MainWindow::slotTableCustomMenuRequested(QPoint pos)
         menu->addAction(ui->actionCopyHash);
         menu->popup(ui->tableView->viewport()->mapToGlobal(pos));
     }
+}
+
+void MainWindow::slotSearchFinished()
+{
+    m_progressLabel->close();
+    this->setEnabled(true);
 }
 
 void MainWindow::on_prevButton_clicked()

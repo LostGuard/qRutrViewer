@@ -1,4 +1,5 @@
 #include "tablemodel.h"
+#include <QFont>
 
 TableModel::TableModel(QObject *parent)
 {

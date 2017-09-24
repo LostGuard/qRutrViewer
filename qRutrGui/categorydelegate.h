@@ -4,12 +4,12 @@
 #include <QItemDelegate>
 #include <QPainter>
 
-class categoryDelegate : public QItemDelegate
+class CategoryDelegate : public QItemDelegate
 {
     Q_OBJECT
 public:
-    categoryDelegate();
-    ~categoryDelegate();
+    CategoryDelegate();
+    ~CategoryDelegate();
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 };
 

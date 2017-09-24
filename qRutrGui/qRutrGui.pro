@@ -16,13 +16,18 @@ SOURCES += main.cpp\
     tablemodel.cpp \
     itemviewform.cpp \
     ../qRutrXMLConv/database.cpp \
-    categorydelegate.cpp
+    categorydelegate.cpp \
+    databaseworker.cpp
 HEADERS  += mainwindow.h \
     tablemodel.h \
     itemviewform.h \
     ../qRutrXMLConv/database.h \
     ../qRutrXMLConv/rutritem.h \
-    categorydelegate.h
+    categorydelegate.h \
+    databaseworker.h
 
 FORMS    += mainwindow.ui \
     itemviewform.ui
+
+RESOURCES += \
+    res.qrc

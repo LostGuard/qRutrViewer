@@ -2,17 +2,17 @@
 #include <QLabel>
 #include <QTextDocument>
 
-categoryDelegate::categoryDelegate()
+CategoryDelegate::CategoryDelegate()
 {
     
 }
 
-categoryDelegate::~categoryDelegate()
+CategoryDelegate::~CategoryDelegate()
 {
     
 }
 
-void categoryDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void CategoryDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     if( option.state & QStyle::State_Selected )
             painter->fillRect( option.rect, option.palette.highlight() );
