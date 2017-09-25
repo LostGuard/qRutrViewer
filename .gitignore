@@ -44,3 +44,11 @@ target_wrapper.*
 
 # QtCtreator CMake
 CMakeLists.txt.user*
+
+# sqlite
+*.sqlite
+
+# Binaries
+qRutrGui/qRutrGui
+qRutrXMLConv/qRutrXMLConv
+
