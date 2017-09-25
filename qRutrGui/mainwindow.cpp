@@ -18,11 +18,23 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
-    ui->categoryComboBox->addItem(" - ", -1);
+        QList<int> sizes;
+        int h = ui->splitter->sizeHint().height() / 7;
+        sizes << h  << ui->splitter->sizeHint().height() - h;
+        ui->splitter->setSizes(sizes);
+
+    QListWidgetItem *litem = new QListWidgetItem();
+    litem->setText(" - ");
+    litem->setData(Qt::UserRole, -1);
+    ui->categoryListWidget->insertItem(ui->categoryListWidget->count(), litem);
+    ui->categoryListWidget->setCurrentRow(0);
     QMap<int, QString> cmap = m_db->getCategories();
     foreach (int i, cmap.keys())
     {
-        ui->categoryComboBox->addItem(cmap[i], i);
+        litem = new QListWidgetItem();
+        litem->setText(cmap[i]);
+        litem->setData(Qt::UserRole, i);
+        ui->categoryListWidget->insertItem(ui->categoryListWidget->count(), litem);
     }
 
     //progressLabel->setGeometry(this->geometry().topLeft().x()+20, this->geometry().topLeft().y()+160, 550, 350);
@@ -68,22 +80,23 @@ void MainWindow::on_searchButton_clicked()
 
 void MainWindow::startSearch()
 {
+    slotFreezeInterface();
+
     QString cmd;
     QList<RuTrItem*>* items = new QList<RuTrItem*>();
     QStringList *kwlist = new QStringList();
     *kwlist = ui->searchEdit->text().split(" ");
-    if (!ui->searchEdit->text().isEmpty())
-    {
-        this->setEnabled(false);
 
-        DataBaseWorker *wk = new DataBaseWorker(m_db);
-        wk->SetSearchWorker(kwlist, 0, m_MaxItemsView, ui->categoryComboBox->currentData().toInt());
-        connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
-        connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), this, SLOT(slotUnfreezeInterface()));
-        connect(wk, SIGNAL(signalError(QString)), this, SLOT(slotViewError(QString)));
-        connect(wk, SIGNAL(finished()), wk, SLOT(deleteLater()));
-        wk->start();
-    }
+    int catId = -1;
+    DataBaseWorker *wk = new DataBaseWorker(m_db);
+    if (ui->categoryListWidget->currentItem())
+        catId = ui->categoryListWidget->currentItem()->data(Qt::UserRole).toInt();
+    wk->SetSearchWorker(kwlist, 0, m_MaxItemsView, catId);
+    connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
+    connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), this, SLOT(slotUnfreezeInterface()));
+    connect(wk, SIGNAL(signalError(QString)), this, SLOT(slotViewError(QString)));
+    connect(wk, SIGNAL(finished()), wk, SLOT(deleteLater()));
+    wk->start();
 }
 
 void MainWindow::slotFreezeInterface()
@@ -206,7 +219,9 @@ void MainWindow::on_actionSearchInCategory_triggered()
     if (mlist.length() > 0)
     {
         RuTrItem *item = m_Model->getItem(mlist[0].row());
-        ui->categoryComboBox->setCurrentText(m_Model->getCategoryText(item->ForumId));
+        for (int i = 0; i < ui->categoryListWidget->count(); ++i)
+            if (ui->categoryListWidget->item(i)->data(Qt::UserRole).toInt() == item->ForumId)
+                ui->categoryListWidget->setCurrentRow(i);
         on_searchButton_clicked();
     }
 

@@ -167,6 +167,9 @@ void DataBase::Search(QList<RuTrItem*>* result, QStringList& keyWords, int offse
     m_QueryBase->clear();
     QString cmd = "SELECT * FROM " + CON_BASE_TABLE_NAME;
     QString str = " WHERE ";
+
+    if (keyWords.count() == 0)
+        str += " and ";
     foreach (QString k, keyWords)
     {
         str += "title like '%" + k.trimmed() + "%' and ";

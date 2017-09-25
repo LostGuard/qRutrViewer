@@ -37,27 +37,13 @@
      </layout>
     </item>
     <item>
-     <layout class="QHBoxLayout" name="horizontalLayout_3">
-      <item>
-       <widget class="QComboBox" name="categoryComboBox"/>
-      </item>
-      <item>
-       <spacer name="horizontalSpacer_2">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
-    </item>
-    <item>
-     <widget class="QTableView" name="tableView"/>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Vertical</enum>
+      </property>
+      <widget class="QListWidget" name="categoryListWidget"/>
+      <widget class="QTableView" name="tableView"/>
+     </widget>
     </item>
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout_2">
