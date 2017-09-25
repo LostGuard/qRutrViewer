@@ -8,8 +8,10 @@ class DataBaseWorker : public QThread
 {
     Q_OBJECT
 public:
-    DataBaseWorker(DataBase *db, QStringList *words, int offset, int count, int categoryId);
+    DataBaseWorker(DataBase *db);
     ~DataBaseWorker();
+    void SetSearchWorker(QStringList* words, int offset, int count, int category_id);
+    void SetRequestContentWorker(RuTrItem *item);
 
 private:
     DataBase* m_db;
@@ -17,6 +19,14 @@ private:
     int m_offset;
     int m_count;
     int m_categoryId;
+    RuTrItem* m_item;
+
+    enum RequestType
+    {
+        SearchType,
+        GetContentType
+    };
+    RequestType m_recType;
 
 protected:
     void run();
@@ -24,6 +34,7 @@ protected:
 signals:
     void signalError(QString str);
     void signalSearchFinished(QList<RuTrItem*>* items, int searchTimeMs);
+    void signalGetContentFinished(RuTrItem* item, QString content);
 };
 
 #endif // DATABASEWORKER_H

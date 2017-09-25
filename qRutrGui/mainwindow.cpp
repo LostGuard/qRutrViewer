@@ -25,9 +25,21 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->categoryComboBox->addItem(cmap[i], i);
     }
 
+    //progressLabel->setGeometry(this->geometry().topLeft().x()+20, this->geometry().topLeft().y()+160, 550, 350);
+    //progressLabel->setFixedHeight(350);
+    //progressLabel->setFixedWidth(550);
+    QMovie *movie = new QMovie(":/icons/index.ajax-spinner-preloader.gif");
+    m_progressLabel = new QLabel(this);
+    //m_progressLabel->setAttribute(Qt::WA_DeleteOnClose);
+    m_progressLabel->setWindowFlags(Qt::SplashScreen);
+    m_progressLabel->setAutoFillBackground(false);
+    m_progressLabel->setAttribute(Qt::WA_TranslucentBackground);
+    m_progressLabel->setAttribute(Qt::WA_NoSystemBackground);
+    m_progressLabel->setMovie(movie);
+    movie->start();
+
     m_Model = new TableModel(this, cmap);
-    connect(this, SIGNAL(signalSearchFinished(QList<RuTrItem*>*)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
-    connect(ui->tableView,SIGNAL(doubleClicked(QModelIndex)), this, SLOT(slotShowItem()));
+    connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_actionView_triggered()));
 
     ui->tableView->setModel(m_Model);
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -62,39 +74,34 @@ void MainWindow::startSearch()
     *kwlist = ui->searchEdit->text().split(" ");
     if (!ui->searchEdit->text().isEmpty())
     {
-        QMovie *movie = new QMovie(":/icons/index.ajax-spinner-preloader.gif");
-        m_progressLabel = new QLabel(this);
-
-        m_progressLabel->setAttribute(Qt::WA_DeleteOnClose);
-        m_progressLabel->setWindowFlags(Qt::SplashScreen);
-        m_progressLabel->setAutoFillBackground(false);
-        m_progressLabel->setAttribute(Qt::WA_TranslucentBackground);
-        m_progressLabel->setAttribute(Qt::WA_NoSystemBackground);
         this->setEnabled(false);
-        //progressLabel->setGeometry(this->geometry().topLeft().x()+20, this->geometry().topLeft().y()+160, 550, 350);
-        //progressLabel->setFixedHeight(350);
-        //progressLabel->setFixedWidth(550);
 
-        m_progressLabel->setMovie(movie);
-        movie->start();
-        m_progressLabel->show();
-
-        DataBaseWorker *wk = new DataBaseWorker(m_db, kwlist, 0, m_MaxItemsView, ui->categoryComboBox->currentData().toInt());
+        DataBaseWorker *wk = new DataBaseWorker(m_db);
+        wk->SetSearchWorker(kwlist, 0, m_MaxItemsView, ui->categoryComboBox->currentData().toInt());
         connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
-        connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), this, SLOT(slotSearchFinished()));
+        connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), this, SLOT(slotUnfreezeInterface()));
+        connect(wk, SIGNAL(signalError(QString)), this, SLOT(slotViewError(QString)));
         connect(wk, SIGNAL(finished()), wk, SLOT(deleteLater()));
         wk->start();
     }
 }
 
-void MainWindow::slotShowItem()
+void MainWindow::slotFreezeInterface()
 {
-    QModelIndexList mlist = ui->tableView->selectionModel()->selectedIndexes();
-    if (mlist.length() > 0)
-    {
-        ItemViewForm* frm = new ItemViewForm(m_db->GetContent(m_Model->getItem(mlist[0].row())));
-        frm->show();
-    }
+    this->setEnabled(false);
+    m_progressLabel->show();
+}
+
+void MainWindow::slotUnfreezeInterface()
+{
+    this->setEnabled(true);
+    m_progressLabel->hide();
+}
+
+void MainWindow::slotShowItem(RuTrItem* item, QString content)
+{
+    ItemViewForm* frm = new ItemViewForm(content);
+    frm->show();
 }
 
 void MainWindow::slotTableCustomMenuRequested(QPoint pos)
@@ -112,10 +119,9 @@ void MainWindow::slotTableCustomMenuRequested(QPoint pos)
     }
 }
 
-void MainWindow::slotSearchFinished()
+void MainWindow::slotViewError(QString err)
 {
-    m_progressLabel->close();
-    this->setEnabled(true);
+    QMessageBox::warning(this, "Ошибка", err);
 }
 
 void MainWindow::on_prevButton_clicked()
@@ -139,7 +145,16 @@ void MainWindow::on_nextButton_clicked()
 
 void MainWindow::on_actionView_triggered()
 {
-    slotShowItem();
+    QModelIndexList mlist = ui->tableView->selectionModel()->selectedIndexes();
+    if (mlist.length() > 0)
+    {
+        DataBaseWorker *dw = new DataBaseWorker(m_db);
+        dw->SetRequestContentWorker(m_Model->getItem(mlist[0].row()));
+        connect(dw, SIGNAL(signalGetContentFinished(RuTrItem*,QString)), this, SLOT(slotShowItem(RuTrItem*,QString)));
+        connect(dw, SIGNAL(signalGetContentFinished(RuTrItem*,QString)), this, SLOT(slotUnfreezeInterface()));
+        slotFreezeInterface();
+        dw->start();
+    }
 }
 
 void MainWindow::on_actionCopy_triggered()

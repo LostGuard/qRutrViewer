@@ -26,9 +26,9 @@ public:
 
 private slots:
     void on_searchButton_clicked();
-    void slotShowItem();
+    void slotShowItem(RuTrItem* item, QString content);
     void slotTableCustomMenuRequested(QPoint);
-    void slotSearchFinished();
+    void slotViewError(QString err);
 
     void on_prevButton_clicked();
     void on_nextButton_clicked();
@@ -39,7 +39,7 @@ private slots:
     void on_actionSearchInCategory_triggered();
 
 signals:
-    void signalSearchFinished(QList<RuTrItem*>* items);
+    //void signalSearchFinished(QList<RuTrItem*>* items);
 
 private:
     Ui::MainWindow *ui;
@@ -49,6 +49,9 @@ private:
     int m_MaxItemsView = 500;
     QLabel *m_progressLabel;
     void startSearch();
+private slots:
+    void slotFreezeInterface();
+    void slotUnfreezeInterface();
 };
 
 #endif // MAINWINDOW_H
