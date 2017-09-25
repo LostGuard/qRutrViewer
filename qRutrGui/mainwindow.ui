@@ -112,6 +112,11 @@
     <string>Скопировать хеш</string>
    </property>
   </action>
+  <action name="actionSearchInCategory">
+   <property name="text">
+    <string>Искать в этой категории</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

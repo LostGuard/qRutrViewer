@@ -9,8 +9,8 @@
 #include "tablemodel.h"
 #include "itemviewform.h"
 #include "../qRutrXMLConv/database.h"
-#include "categorydelegate.h"
 #include "databaseworker.h"
+#include "categorydelegate.h"
 
 namespace Ui {
 class MainWindow;
@@ -36,7 +36,8 @@ private slots:
     void on_actionCopy_triggered();
     void on_actionCopyFull_triggered();
     void on_actionCopyHash_triggered();
-    
+    void on_actionSearchInCategory_triggered();
+
 signals:
     void signalSearchFinished(QList<RuTrItem*>* items);
 

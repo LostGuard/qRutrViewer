@@ -25,20 +25,21 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->categoryComboBox->addItem(cmap[i], i);
     }
 
-    m_Model = new TableModel(this);
+    m_Model = new TableModel(this, cmap);
     connect(this, SIGNAL(signalSearchFinished(QList<RuTrItem*>*)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
     connect(ui->tableView,SIGNAL(doubleClicked(QModelIndex)), this, SLOT(slotShowItem()));
 
-    CategoryDelegate *delegate = new CategoryDelegate();
-    ui->tableView->setItemDelegateForColumn(0, delegate);
     ui->tableView->setModel(m_Model);
-    
+    ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tableView, SIGNAL(customContextMenuRequested(QPoint)), SLOT(slotTableCustomMenuRequested(QPoint)));
-    
-    //ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
-    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->tableView->horizontalHeader()->hide();
+    CategoryDelegate* delegate = new CategoryDelegate();
+    ui->tableView->setItemDelegateForColumn(0, delegate);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
+
+    connect(this->ui->tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)),
+            ui->tableView, SLOT(resizeRowsToContents()));
+
     connect(ui->searchEdit, SIGNAL(returnPressed()), this, SLOT(on_searchButton_clicked()));
 }
 
@@ -106,6 +107,7 @@ void MainWindow::slotTableCustomMenuRequested(QPoint pos)
         menu->addAction(ui->actionCopy);
         menu->addAction(ui->actionCopyFull);
         menu->addAction(ui->actionCopyHash);
+        menu->addAction(ui->actionSearchInCategory);
         menu->popup(ui->tableView->viewport()->mapToGlobal(pos));
     }
 }
@@ -165,6 +167,7 @@ void MainWindow::on_actionCopyFull_triggered()
         res += item->TorrentHash + "\n";
         res += "id: " + QString::number(item->id) + "\n";
         res += "forumId: " + QString::number(item->ForumId) + "\n";
+        res += "forum: " + m_Model->getCategoryText(item->ForumId) + "\n";
         res += "-----------------------";
     }
     QApplication::clipboard()->setText(res);
@@ -180,4 +183,16 @@ void MainWindow::on_actionCopyHash_triggered()
         res += item->TorrentHash + "\n";
     }
     QApplication::clipboard()->setText(res);
+}
+
+void MainWindow::on_actionSearchInCategory_triggered()
+{
+    QModelIndexList mlist = ui->tableView->selectionModel()->selectedIndexes();
+    if (mlist.length() > 0)
+    {
+        RuTrItem *item = m_Model->getItem(mlist[0].row());
+        ui->categoryComboBox->setCurrentText(m_Model->getCategoryText(item->ForumId));
+        on_searchButton_clicked();
+    }
+
 }
