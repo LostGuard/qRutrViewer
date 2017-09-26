@@ -1,6 +1,7 @@
 #ifndef DATABASEWORKER_H
 #define DATABASEWORKER_H
 #include <QThread>
+#include <QStringList>
 #include "rutritem.h"
 #include "../qRutrXMLConv/database.h"
 
@@ -10,16 +11,17 @@ class DataBaseWorker : public QThread
 public:
     DataBaseWorker(DataBase *db);
     ~DataBaseWorker();
-    void SetSearchWorker(QStringList* words, int offset, int count, int category_id);
+    void SetSearchWorker(QString searchStr, int offset, int count, int category_id, bool fastSearch);
     void SetRequestContentWorker(RuTrItem *item);
 
 private:
     DataBase* m_db;
-    QStringList* m_words;
+    QString m_searchStr;
     int m_offset;
     int m_count;
     int m_categoryId;
     RuTrItem* m_item;
+    bool m_fastSearch;
 
     enum RequestType
     {

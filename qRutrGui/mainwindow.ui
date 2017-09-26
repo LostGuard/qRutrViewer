@@ -28,6 +28,13 @@
        <widget class="QLineEdit" name="searchEdit"/>
       </item>
       <item>
+       <widget class="QCheckBox" name="detailedSearchCheckBox">
+        <property name="text">
+         <string>Подробный поиск</string>
+        </property>
+       </widget>
+      </item>
+      <item>
        <widget class="QPushButton" name="searchButton">
         <property name="text">
          <string>Поиск</string>

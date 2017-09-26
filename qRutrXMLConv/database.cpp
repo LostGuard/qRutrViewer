@@ -31,23 +31,26 @@ bool DataBase::init(bool fastClearDb)
 {
     if(fastClearDb)
     {
-        if (m_saveBase && m_saveForums)
+        if (m_saveBase)
         {
             if (QFile::exists(m_dbpath + CON_BASE_DB_NAME))
             {
                 if (!QFile::remove(m_dbpath + CON_BASE_DB_NAME))
                 {
-                    errorString += "Не удалось удалить файлы базы";
+                    errorString += "Не удалось удалить файлы базы " + CON_BASE_DB_NAME;
                     return false;
                 }
             }
         }
-        if (QFile::exists(m_dbpath + CON_CONTENT_DB_NAME))
+        if (m_saveContent)
         {
-            if (!QFile::remove(m_dbpath + CON_CONTENT_DB_NAME))
+            if (QFile::exists(m_dbpath + CON_CONTENT_DB_NAME))
             {
-                errorString += "Не удалось удалить файлы базы";
-                return false;
+                if (!QFile::remove(m_dbpath + CON_CONTENT_DB_NAME))
+                {
+                    errorString += "Не удалось удалить файлы базы" + CON_CONTENT_DB_NAME;
+                    return false;
+                }
             }
         }
     }
@@ -69,12 +72,12 @@ bool DataBase::init(bool fastClearDb)
     }
 
     m_QueryBase = new QSqlQuery(m_base_db);
-    m_QueryBase->exec("CREATE TABLE IF NOT EXISTS " + CON_BASE_TABLE_NAME + " (id INTEGER PRIMARY KEY, title TEXT, size TEXT, hash TEXT, forum_id INTEGER, registered TEXT)");
+    m_QueryBase->exec("CREATE TABLE IF NOT EXISTS " + CON_BASE_TABLE_NAME + " (id INTEGER PRIMARY KEY, size TEXT, hash TEXT, forum_id INTEGER, registered TEXT)");
     m_QueryBase->exec("CREATE TABLE IF NOT EXISTS " + CON_CAT_TABLE_NAME + " (id INTEGER PRIMARY KEY, description TEXT)");
+    m_QueryBase->exec("CREATE VIRTUAL TABLE IF NOT EXISTS " + CON_TITLES_TABLE_NAME + " USING fts4(title TEXT)");
 
     m_QueryContent = new QSqlQuery(m_content_db);
-    m_QueryContent->exec("CREATE TABLE IF NOT EXISTS " + CON_CONTENT_TABLE_NAME + "  (id INTEGER PRIMARY KEY, content TEXT)");
-
+    m_QueryContent->exec("CREATE TABLE IF NOT EXISTS " + CON_CONTENT_TABLE_NAME + "  (id INTEGER PRIMARY KEY, content BLOB)");
 
     return true;
 }
@@ -103,7 +106,7 @@ void DataBase::sync()
          sizes.append(it->size);
          hashes.append(it->TorrentHash);
          forum_ids.append(it->ForumId);
-         contents.append(it->content);
+         contents.append(qCompress(it->content.toUtf8(), 9));
          registered.append(it->registered.toString(CON_DATE_TIME_FORMAT));
     }
 
@@ -111,17 +114,23 @@ void DataBase::sync()
     {
         m_QueryBase->clear();
         m_QueryBase->exec("BEGIN TRANSACTION");
-        m_QueryBase->prepare("INSERT INTO " + CON_BASE_TABLE_NAME + " (id, title, size, hash, forum_id, registered) VALUES (?, ?, ?, ?, ?, ?)");
+        m_QueryBase->prepare("INSERT INTO " + CON_BASE_TABLE_NAME + " (id, size, hash, forum_id, registered) VALUES (?, ?, ?, ?, ?)");
         m_QueryBase->addBindValue(ids);
-        m_QueryBase->addBindValue(titles);
         m_QueryBase->addBindValue(sizes);
         m_QueryBase->addBindValue(hashes);
         m_QueryBase->addBindValue(forum_ids);
         m_QueryBase->addBindValue(registered);
-
-
         m_QueryBase->execBatch();
         m_QueryBase->exec("END TRANSACTION");
+
+        m_QueryBase->clear();
+        m_QueryBase->exec("BEGIN TRANSACTION");
+        m_QueryBase->prepare("INSERT INTO " + CON_TITLES_TABLE_NAME + " (docid, title) VALUES (?, ?)");
+        m_QueryBase->addBindValue(ids);
+        m_QueryBase->addBindValue(titles);
+        m_QueryBase->execBatch();
+        m_QueryBase->exec("END TRANSACTION");
+
     }
     //=================
     if (m_saveContent)
@@ -143,46 +152,74 @@ void DataBase::sync()
 
 void DataBase::saveForums(QMap<int, QString>& map)
 {
-    QVariantList ids;
-    QVariantList descrs;
-
-    foreach (int k, map.keys())
+    if (m_saveBase)
     {
-        ids << k;
-        descrs << map[k];
+        QVariantList ids;
+        QVariantList descrs;
+
+        foreach (int k, map.keys())
+        {
+            ids << k;
+            descrs << map[k];
+        }
+
+        m_QueryBase->clear();
+        m_QueryBase->exec("BEGIN TRANSACTION");
+        m_QueryBase->prepare("INSERT INTO " + CON_CAT_TABLE_NAME + " (id, description) VALUES (?, ?)");
+        m_QueryBase->addBindValue(ids);
+        m_QueryBase->addBindValue(descrs);
+
+        m_QueryBase->execBatch();
+        m_QueryBase->exec("END TRANSACTION");
     }
-
-    m_QueryBase->clear();
-    m_QueryBase->exec("BEGIN TRANSACTION");
-    m_QueryBase->prepare("INSERT INTO " + CON_CAT_TABLE_NAME + " (id, description) VALUES (?, ?)");
-    m_QueryBase->addBindValue(ids);
-    m_QueryBase->addBindValue(descrs);
-
-    m_QueryBase->execBatch();
-    m_QueryBase->exec("END TRANSACTION");
 }
 
 void DataBase::Search(QList<RuTrItem*>* result, QStringList& keyWords, int offset, int count, int categoryId)
 {
-    m_QueryBase->clear();
-    QString cmd = "SELECT * FROM " + CON_BASE_TABLE_NAME;
-    QString str = " WHERE ";
+    QString whereStr;
 
-    if (keyWords.count() == 0)
-        str += " and ";
-    foreach (QString k, keyWords)
+    if (keyWords.count() != 0 || categoryId != -1)
     {
-        str += "title like '%" + k.trimmed() + "%' and ";
+        whereStr += " WHERE ";
+        foreach (QString k, keyWords)
+            whereStr += "title like '%" + k.trimmed() + "%' and ";
+
+        if (categoryId != -1)
+            whereStr += "forum_id = " + QString::number(categoryId) + " and";
+
+        whereStr = whereStr.left(whereStr.count() - 4); // remove last 'and'
     }
 
-    if (categoryId != -1)
-        str += "forum_id = " + QString::number(categoryId);
-    else
-        str = str.left(str.count() - 4); // remove last 'and'
+    InternalSearch(result, whereStr, offset, count);
+}
 
-    str += " ORDER BY id ";
-    str += "LIMIT " + QString::number(offset) + "," + QString::number(count);
-    cmd += str;
+void DataBase::FastSearch(QList<RuTrItem*>* result, QString keyWords, int offset, int count, int categoryId)
+{//SELECT * FROM rutr_titles  join rutr_base ON rutr_titles.docid = rutr_base.id where rutr_titles.title match "linux windows" and forum_id = 1424 order by id limit 3
+    QString whereStr;
+
+    if (!keyWords.isEmpty() || categoryId != -1)
+    {
+        whereStr += "WHERE ";
+        if (!keyWords.isEmpty())
+            whereStr += CON_TITLES_TABLE_NAME + ".title " + "match \"" + keyWords + "\"" + " and";
+        if (categoryId != -1)
+            whereStr += " forum_id=" + QString::number(categoryId) + " and";
+
+        whereStr = whereStr.left(whereStr.count() - 4); // remove last 'and'
+    }
+
+    InternalSearch(result, whereStr, offset, count);
+}
+
+void DataBase::InternalSearch(QList<RuTrItem*>* result, QString whereStr, int offset, int count)
+{//SELECT * FROM rutr_titles  join rutr_base ON rutr_titles.docid = rutr_base.id where rutr_titles.title match "linux windows" and forum_id = 1424 order by id limit 3
+    m_QueryBase->clear();
+    QString cmd = "SELECT * FROM " + CON_TITLES_TABLE_NAME + " join " + CON_BASE_TABLE_NAME + " ON " + CON_TITLES_TABLE_NAME + ".docid = " + CON_BASE_TABLE_NAME + ".id ";
+
+    cmd += whereStr;
+
+    cmd += " ORDER BY id ";
+    cmd += " LIMIT " + QString::number(offset) + "," + QString::number(count);
 
     m_QueryBase->prepare(cmd);
     m_QueryBase->exec();
@@ -193,6 +230,19 @@ void DataBase::Search(QList<RuTrItem*>* result, QStringList& keyWords, int offse
     }
 }
 
+//title, id, size, hash, forum_id, registered
+RuTrItem *DataBase::MakeBaseItem(QSqlQuery *query)
+{
+    RuTrItem *item = new RuTrItem();
+    item->id = query->value(1).toInt();
+    item->title = query->value(0).toString();
+    item->size = query->value(2).toString();
+    item->TorrentHash = query->value(3).toString();
+    item->ForumId = query->value(4).toInt();
+    item->registered = QDateTime::fromString(query->value(5).toString(), CON_DATE_TIME_FORMAT);
+    return item;
+}
+
 QString DataBase::GetContent(RuTrItem *item)
 {
     QString result = "";
@@ -201,7 +251,7 @@ QString DataBase::GetContent(RuTrItem *item)
     m_QueryContent->prepare(cmd);
     m_QueryContent->exec();
     if (m_QueryContent->next())
-        result = m_QueryContent->value(0).toString();
+        result = qUncompress(m_QueryContent->value(0).toByteArray());
     return result;
 }
 
@@ -214,10 +264,13 @@ void DataBase::resetData()
 
     if (m_saveContent)
         m_QueryContent->exec("DELETE FROM " + CON_CONTENT_TABLE_NAME);
+
     if (m_saveBase)
+    {
         m_QueryBase->exec("DELETE FROM " + CON_BASE_TABLE_NAME);
-    if (m_saveForums)
         m_QueryBase->exec("DELETE FROM " + CON_CAT_TABLE_NAME);
+        m_QueryBase->exec("DELETE FROM " + CON_TITLES_TABLE_NAME);
+    }
 }
 
 QMap<int, QString> DataBase::getCategories()
@@ -232,22 +285,9 @@ QMap<int, QString> DataBase::getCategories()
     return res;
 }
 
-void DataBase::setWriteMode(bool writeBase, bool writeContent, bool writeForums)
+void DataBase::setWriteMode(bool writeBase, bool writeContent)
 {
     m_saveBase = writeBase;
     m_saveContent = writeContent;
-    m_saveForums = writeForums;
-}
-//id, title, size, hash, forum_id, registered
-RuTrItem *DataBase::MakeBaseItem(QSqlQuery *query)
-{
-    RuTrItem *item = new RuTrItem();
-    item->id = query->value(0).toInt();
-    item->title = query->value(1).toString();
-    item->size = query->value(2).toString();
-    item->TorrentHash = query->value(3).toString();
-    item->ForumId = query->value(4).toInt();
-    item->registered = QDateTime::fromString(query->value(5).toString(), CON_DATE_TIME_FORMAT);
-    return item;
 }
 

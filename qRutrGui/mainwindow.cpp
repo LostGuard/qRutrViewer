@@ -84,14 +84,12 @@ void MainWindow::startSearch()
 
     QString cmd;
     QList<RuTrItem*>* items = new QList<RuTrItem*>();
-    QStringList *kwlist = new QStringList();
-    *kwlist = ui->searchEdit->text().split(" ");
 
     int catId = -1;
     DataBaseWorker *wk = new DataBaseWorker(m_db);
     if (ui->categoryListWidget->currentItem())
         catId = ui->categoryListWidget->currentItem()->data(Qt::UserRole).toInt();
-    wk->SetSearchWorker(kwlist, 0, m_MaxItemsView, catId);
+    wk->SetSearchWorker(ui->searchEdit->text(), m_SearchStartIndex, m_MaxItemsView, catId, !ui->detailedSearchCheckBox->isChecked());
     connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
     connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), this, SLOT(slotUnfreezeInterface()));
     connect(wk, SIGNAL(signalError(QString)), this, SLOT(slotViewError(QString)));
@@ -139,7 +137,7 @@ void MainWindow::slotViewError(QString err)
 
 void MainWindow::on_prevButton_clicked()
 {
-    if (!ui->searchEdit->text().isEmpty() && m_SearchStartIndex >= m_MaxItemsView)
+    if (m_SearchStartIndex >= m_MaxItemsView)
     {
         m_SearchStartIndex -= m_MaxItemsView;
         startSearch();
@@ -148,7 +146,7 @@ void MainWindow::on_prevButton_clicked()
 
 void MainWindow::on_nextButton_clicked()
 {
-    if (!ui->searchEdit->text().isEmpty() && ui->tableView->model()->rowCount() == m_MaxItemsView)
+    if (ui->tableView->model()->rowCount() >= m_MaxItemsView)
     {
         m_SearchStartIndex += m_MaxItemsView;
         startSearch();

@@ -7,16 +7,17 @@ DataBaseWorker::DataBaseWorker(DataBase *db)
 
 DataBaseWorker::~DataBaseWorker()
 {
-    delete m_words;
+
 }
 
-void DataBaseWorker::SetSearchWorker(QStringList* words, int offset, int count, int category_id)
+void DataBaseWorker::SetSearchWorker(QString searchStr, int offset, int count, int category_id, bool fastSearch)
 {
     m_recType = SearchType;
-    m_words = words;
+    m_searchStr = searchStr;
     m_offset = offset;
     m_count = count;
     m_categoryId = category_id;
+    m_fastSearch = fastSearch;
 }
 
 void DataBaseWorker::SetRequestContentWorker(RuTrItem *item)
@@ -29,9 +30,21 @@ void DataBaseWorker::run()
 {
     if (m_recType == SearchType)
     {
-        QList<RuTrItem*>* items = new QList<RuTrItem*>();
-        m_db->Search(items, *m_words, m_offset, m_count, m_categoryId);
-        emit signalSearchFinished(items, 0);
+        QList<RuTrItem*>* items = new QList<RuTrItem*>;
+        if (m_fastSearch)
+        {
+            m_db->FastSearch(items, m_searchStr, m_offset, m_count, m_categoryId);
+            emit signalSearchFinished(items, 0);
+        }
+        else
+        {
+            QList<RuTrItem*>* items = new QList<RuTrItem*>();
+            QStringList slist;
+            if (!m_searchStr.isEmpty())
+                slist = m_searchStr.split(" ");
+            m_db->Search(items, slist, m_offset, m_count, m_categoryId);
+            emit signalSearchFinished(items, 0);
+        }
     }
     else if (m_recType == GetContentType)
     {

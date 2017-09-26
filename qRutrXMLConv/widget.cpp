@@ -39,7 +39,6 @@ void Widget::on_startButton_clicked()
         return;
     }
 
-    //QFile* file = new QFile("/home/lin2/big/rutr/backup.20170916154625.xml");
     QFile* file = new QFile(ui->XMLEdit->text());
     if (!file->open(QIODevice::ReadOnly | QIODevice::Text))
     {
@@ -52,11 +51,11 @@ void Widget::on_startButton_clicked()
     DataBase* db = new DataBase(ui->dbEdit->text());
     if (ui->isTestCheckBox->isChecked())
     {
-        db->setWriteMode(false, false, false);
+        db->setWriteMode(false, false);
         fastDel = false;
     }
     else
-        db->setWriteMode(ui->baseDataCheckBox->isChecked(), ui->contentCheckBox->isChecked(), ui->categoryCheckBox->isChecked());
+        db->setWriteMode(ui->baseDataCheckBox->isChecked(), ui->contentCheckBox->isChecked());
 
     if (!db->init(fastDel))
     {

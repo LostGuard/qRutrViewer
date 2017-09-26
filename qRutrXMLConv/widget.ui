@@ -120,16 +120,6 @@
         </property>
        </widget>
       </item>
-      <item>
-       <widget class="QCheckBox" name="categoryCheckBox">
-        <property name="text">
-         <string>Категории</string>
-        </property>
-        <property name="checked">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
      </layout>
     </widget>
    </item>
