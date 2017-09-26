@@ -19,6 +19,7 @@ public:
 private:
     Ui::ItemViewForm *ui;
     QString GetHTML(QString content);
+    QString ConvertTag(QString bbcode);
 };
 
 #endif // ITEMVIEWFORM_H
