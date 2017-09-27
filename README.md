@@ -1,4 +1,4 @@
-# qRutrViewer
+## Конвертер для дампа https://rutracker.org/forum/viewtopic.php?t=5290461 (на 27.09.17) и просмотрщик получившийся базы.
 
 ## Сборка на Linux (Ubuntu)
 
