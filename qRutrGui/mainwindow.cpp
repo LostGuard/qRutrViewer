@@ -183,7 +183,7 @@ void MainWindow::on_actionCopy_triggered()
 void MainWindow::on_actionCopyFull_triggered()
 {
     QString res = "";
-    QModelIndexList mlist = ui->tableView->selectionModel()->selectedIndexes();
+    QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
     for (int i = 0; i < mlist.length(); ++i)
     {
         RuTrItem *item = m_Model->getItem(mlist[i].row());

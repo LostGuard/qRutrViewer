@@ -218,7 +218,7 @@ void DataBase::InternalSearch(QList<RuTrItem*>* result, QString whereStr, int of
 
     cmd += whereStr;
 
-    cmd += " ORDER BY id ";
+    cmd += " ORDER BY id DESC";
     cmd += " LIMIT " + QString::number(offset) + "," + QString::number(count);
 
     m_QueryBase->prepare(cmd);
