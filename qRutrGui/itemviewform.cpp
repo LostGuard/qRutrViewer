@@ -1,15 +1,12 @@
 #include "itemviewform.h"
 #include "ui_itemviewform.h"
 //#include <QFile>
+#include <QWebFrame>
 
 ItemViewForm::ItemViewForm(QString content, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ItemViewForm)
 {
-    ui->setupUi(this);
-    ui->webView->settings()->setUserStyleSheetUrl(QUrl("qrc:/styles.css"));
-    ui->webView->setHtml(GetHTML(content));
-
     m_ReplaceMap.insert("[br]", "<span class=\"post-br\"><br></span>");
     m_ReplaceMap.insert("[b]", "<span class=\"post-b\">");
     m_ReplaceMap.insert("[/b]", "</span>");
@@ -35,6 +32,12 @@ ItemViewForm::ItemViewForm(QString content, QWidget *parent) :
     m_ReplaceMap.insert("[/quote]", "</div></div>");
     m_ReplaceMap.insert("[/spoiler]", "<div class=\"sp-fold clickable\">[свернуть]</div></div></div>");
     m_ReplaceMap.insert("[/url]", "</a>");
+    
+    ui->setupUi(this);
+    ui->webView->settings()->setUserStyleSheetUrl(QUrl("qrc:/styles.css"));
+    ui->webView->settings()->setFontFamily(QWebSettings::StandardFont, "Times New Roman");
+    ui->webView->settings()->setFontSize(QWebSettings::DefaultFontSize, 16);
+    ui->webView->setHtml(GetHTML(content));
 }
 
 ItemViewForm::~ItemViewForm()
@@ -189,9 +192,9 @@ QString ItemViewForm::GetHTML(QString content)
         }
     }
 
-    QString fin = "<div class=\"message td2\">" ;
+    QString fin = "<div id=\"page_container\"><div class=\"message td2\">" ;
     fin += "<div class=\"post_head\"><div>";
     fin += "<div class=\"post_body\" id=\"p-9965519\">";
-    fin += res + "</div></div>";
+    fin += res + "</div></div></div>";
     return fin;
 }
