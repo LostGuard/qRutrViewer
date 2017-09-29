@@ -18,10 +18,10 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
-        QList<int> sizes;
-        int h = ui->splitter->sizeHint().height() / 7;
-        sizes << h  << ui->splitter->sizeHint().height() - h;
-        ui->splitter->setSizes(sizes);
+    QList<int> sizes;
+    int h = ui->splitter->sizeHint().height() / 7;
+    sizes << h  << ui->splitter->sizeHint().height() - h;
+    ui->splitter->setSizes(sizes);
 
     QListWidgetItem *litem = new QListWidgetItem();
     litem->setText(" - ");
@@ -112,6 +112,7 @@ void MainWindow::slotUnfreezeInterface()
 void MainWindow::slotShowItem(RuTrItem* item, QString content)
 {
     ItemViewForm* frm = new ItemViewForm(content);
+    connect(this, SIGNAL(signalCloseAll()), frm, SLOT(close()));
     frm->show();
 }
 
@@ -223,4 +224,10 @@ void MainWindow::on_actionSearchInCategory_triggered()
         on_searchButton_clicked();
     }
 
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+     emit signalCloseAll();
+     event->accept();
 }

@@ -2,4 +2,8 @@
     <qresource prefix="/icons">
         <file>index.ajax-spinner-preloader.gif</file>
     </qresource>
+    <qresource prefix="/">
+        <file>styles.css</file>
+        <file>bbcodetest.txt</file>
+    </qresource>
 </RCC>

@@ -20,6 +20,8 @@ private:
     Ui::ItemViewForm *ui;
     QString GetHTML(QString content);
     QString ConvertTag(QString bbcode);
+
+    QMap<QString, QString> m_ReplaceMap;
 };
 
 #endif // ITEMVIEWFORM_H

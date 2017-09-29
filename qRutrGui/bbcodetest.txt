@@ -1,0 +1,42 @@
+[font=serif2]font serif[/font]
+
+[color=darkred]color[/color]
+
+[size=5]size[/size]
+
+[align=left]align left[/align]
+
+[img=right]https://static.t-ru.org/avatars/8/25/40835425.png[/img]
+
+[pre]pre[/pre]
+
+[box]box[/box]
+
+[b]bold[/b]
+
+[i]italic[/i]
+
+[s]ssssssssssssss[/s]
+
+[quote="quoteheader"]quotetest[/quote]
+[quote]quotetest[/quote]
+
+[img]https://static.t-ru.org/avatars/8/25/40835425.png[/img]
+
+[list]пункт
+[*] item1
+[*] item2
+[*] item3
+[/list]
+
+[url=url1]url2[/url]
+
+[code]
+code1
+[code]
+code2
+[/code]
+[/code]
+
+[spoiler][spoiler="asd"]Spoiler[/spoiler][/spoiler]
+

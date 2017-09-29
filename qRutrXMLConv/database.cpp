@@ -78,7 +78,8 @@ bool DataBase::init(bool fastClearDb)
 
     m_QueryContent = new QSqlQuery(m_content_db);
     m_QueryContent->exec("CREATE TABLE IF NOT EXISTS " + CON_CONTENT_TABLE_NAME + "  (id INTEGER PRIMARY KEY, content BLOB)");
-
+    m_QueryContent->exec("CREATE INDEX IF NOT EXISTS \"content_id_54b90a33\" ON \"" + CON_CONTENT_TABLE_NAME + "\" (\"id\");");
+    //"forum_id" smallint NOT NULL REFERENCES "forum" ("code_forum"));
     return true;
 }
 

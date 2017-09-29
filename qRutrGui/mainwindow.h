@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QLabel>
 #include <QMovie>
+#include <QCloseEvent>
 
 #include "tablemodel.h"
 #include "itemviewform.h"
@@ -39,7 +40,8 @@ private slots:
     void on_actionSearchInCategory_triggered();
 
 signals:
-    //void signalSearchFinished(QList<RuTrItem*>* items);
+    void signalCloseAll();
+
 
 private:
     Ui::MainWindow *ui;
@@ -49,6 +51,7 @@ private:
     int m_MaxItemsView = 500;
     QLabel *m_progressLabel;
     void startSearch();
+    void closeEvent(QCloseEvent *event);
 private slots:
     void slotFreezeInterface();
     void slotUnfreezeInterface();
