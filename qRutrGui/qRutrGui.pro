@@ -4,12 +4,11 @@
 #
 #-------------------------------------------------
 
-QT       += core gui sql webkitwidgets
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core gui sql webkitwidgets widgets
 
 TARGET = qRutrGui
 TEMPLATE = app
+CONFIG += c++11
 
 SOURCES += main.cpp\
         mainwindow.cpp \
