@@ -82,9 +82,6 @@ void MainWindow::startSearch()
 {
     slotFreezeInterface();
 
-    QString cmd;
-    QList<RuTrItem*>* items = new QList<RuTrItem*>();
-
     int catId = -1;
     DataBaseWorker *wk = new DataBaseWorker(m_db);
     if (ui->categoryListWidget->currentItem())
@@ -126,7 +123,11 @@ void MainWindow::slotTableCustomMenuRequested(QPoint pos)
         menu->addAction(ui->actionCopy);
         menu->addAction(ui->actionCopyFull);
         menu->addAction(ui->actionCopyHash);
+        menu->addSeparator();
         menu->addAction(ui->actionSearchInCategory);
+        menu->addSeparator();
+        menu->addAction(ui->actionCopyMagnet);
+        menu->addAction(ui->actionGetTorrent);
         menu->popup(ui->tableView->viewport()->mapToGlobal(pos));
     }
 }
@@ -203,7 +204,7 @@ void MainWindow::on_actionCopyFull_triggered()
 void MainWindow::on_actionCopyHash_triggered()
 {
     QString res = "";
-    QModelIndexList mlist = ui->tableView->selectionModel()->selectedIndexes();
+    QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
     for (int i = 0; i < mlist.length(); ++i)
     {
         RuTrItem *item = m_Model->getItem(mlist[i].row());
@@ -214,7 +215,7 @@ void MainWindow::on_actionCopyHash_triggered()
 
 void MainWindow::on_actionSearchInCategory_triggered()
 {
-    QModelIndexList mlist = ui->tableView->selectionModel()->selectedIndexes();
+    QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
     if (mlist.length() > 0)
     {
         RuTrItem *item = m_Model->getItem(mlist[0].row());
@@ -230,4 +231,36 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
      emit signalCloseAll();
      event->accept();
+}
+
+void MainWindow::on_actionCopyMagnet_triggered()
+{
+    QString res;
+    QStringList strend;
+    QString strstart = "magnet:?xt=urn:btih:";
+    strend << "&tr=http://bt.t-ru.org/ann?magnet";
+    strend << "&tr=http://bt2.t-ru.org/ann?magnet";
+    strend << "&tr=http://bt3.t-ru.org/ann?magnet";
+    strend << "&tr=http://bt4.t-ru.org/ann?magnet";
+
+    QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
+    for (int i = 0; i < mlist.length(); ++i)
+    {
+        RuTrItem *item = m_Model->getItem(mlist[i].row());
+        res += strstart + item->TorrentHash + strend[0] + "\n";
+    }
+    QApplication::clipboard()->setText(res);
+}
+
+void MainWindow::on_actionGetTorrent_triggered()
+{
+    QString res;
+    QString addr = "http://itorrents.org/torrent/";
+    QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
+    for (int i = 0; i < mlist.length(); ++i)
+    {
+        RuTrItem *item = m_Model->getItem(mlist[i].row());
+        res += addr + item->TorrentHash + ".torrent" + "\n";
+    }
+    QApplication::clipboard()->setText(res);
 }

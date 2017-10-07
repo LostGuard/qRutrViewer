@@ -55,6 +55,8 @@ private:
 private slots:
     void slotFreezeInterface();
     void slotUnfreezeInterface();
+    void on_actionCopyMagnet_triggered();
+    void on_actionGetTorrent_triggered();
 };
 
 #endif // MAINWINDOW_H

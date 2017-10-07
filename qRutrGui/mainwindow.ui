@@ -110,6 +110,16 @@
     <string>Искать в этой категории</string>
    </property>
   </action>
+  <action name="actionCopyMagnet">
+   <property name="text">
+    <string>Скопировать магнет ссылку</string>
+   </property>
+  </action>
+  <action name="actionGetTorrent">
+   <property name="text">
+    <string>Скопировать ссылку на торрент файл</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>
