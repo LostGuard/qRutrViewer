@@ -120,6 +120,11 @@
     <string>Скопировать ссылку на торрент файл</string>
    </property>
   </action>
+  <action name="actionCopyRutrackerURL">
+   <property name="text">
+    <string>Скопировать ссылку на rutracker</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources/>

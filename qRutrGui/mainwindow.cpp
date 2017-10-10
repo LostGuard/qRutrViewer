@@ -128,6 +128,7 @@ void MainWindow::slotTableCustomMenuRequested(QPoint pos)
         menu->addSeparator();
         menu->addAction(ui->actionCopyMagnet);
         menu->addAction(ui->actionGetTorrent);
+        menu->addAction(ui->actionCopyRutrackerURL);
         menu->popup(ui->tableView->viewport()->mapToGlobal(pos));
     }
 }
@@ -261,6 +262,19 @@ void MainWindow::on_actionGetTorrent_triggered()
     {
         RuTrItem *item = m_Model->getItem(mlist[i].row());
         res += addr + item->TorrentHash + ".torrent" + "\n";
+    }
+    QApplication::clipboard()->setText(res);
+}
+
+void MainWindow::on_actionCopyRutrackerURL_triggered()
+{
+    QString res;
+    QString addr = "https://rutracker.org/forum/viewtopic.php?t=";
+    QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
+    for (int i = 0; i < mlist.length(); ++i)
+    {
+        RuTrItem *item = m_Model->getItem(mlist[i].row());
+        res += addr + QString::number(item->id) + "/\n";
     }
     QApplication::clipboard()->setText(res);
 }
