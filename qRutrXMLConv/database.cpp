@@ -103,7 +103,7 @@ void DataBase::sync()
     foreach (RuTrItem* it, m_Items)
     {
          ids.append(it->id);
-         titles.append(it->title);
+         titles.append(it->title.toLower());
          sizes.append(it->size);
          hashes.append(it->TorrentHash);
          forum_ids.append(it->ForumId);
@@ -183,7 +183,7 @@ void DataBase::Search(QList<RuTrItem*>* result, QStringList& keyWords, int offse
     {
         whereStr += " WHERE ";
         foreach (QString k, keyWords)
-            whereStr += "title like '%" + k.trimmed() + "%' and ";
+            whereStr += "title like '%" + k.trimmed().toLower() + "%' and ";
 
         if (categoryId != -1)
             whereStr += "forum_id = " + QString::number(categoryId) + " and";
@@ -202,7 +202,7 @@ void DataBase::FastSearch(QList<RuTrItem*>* result, QString keyWords, int offset
     {
         whereStr += "WHERE ";
         if (!keyWords.isEmpty())
-            whereStr += CON_TITLES_TABLE_NAME + ".title " + "match \"" + keyWords + "\"" + " and";
+            whereStr += CON_TITLES_TABLE_NAME + ".title " + "match \"" + keyWords.toLower() + "\"" + " and";
         if (categoryId != -1)
             whereStr += " forum_id=" + QString::number(categoryId) + " and";
 
