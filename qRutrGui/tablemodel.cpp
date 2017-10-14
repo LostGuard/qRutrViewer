@@ -1,4 +1,5 @@
 #include "tablemodel.h"
+#include <QColor>
 #include <QFont>
 
 TableModel::TableModel(QObject *parent, QMap<int, QString> forums)
@@ -28,6 +29,10 @@ QVariant TableModel::data(const QModelIndex &index, int role) const
             return m_RootItems[index.row()]->title;
     }
 
+    if (role == Qt::BackgroundRole)
+        if (index.row() % 2 == 0)
+            return  QColor(255,255,235);
+    
     if (role == Qt::ToolTipRole)
         if (index.column() == 0)
             return index.data(Qt::DisplayRole);
