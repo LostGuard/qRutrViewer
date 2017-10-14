@@ -190,15 +190,17 @@ void MainWindow::on_actionCopyFull_triggered()
     for (int i = 0; i < mlist.length(); ++i)
     {
         RuTrItem *item = m_Model->getItem(mlist[i].row());
-        res += item->title + "\n";
-        res += item->registered.toString("yyyy.MM.dd hh:mm:ss") + "\n";
-        res += item->size + "\n";
-        res += item->TorrentHash + "\n";
+        res += "Title: " + item->title + "\n";
+        res += "Дата создания: " + item->registered.toString("yyyy.MM.dd hh:mm:ss") + "\n";
+        res += "Размер: " + item->size + "\n";
+        res += "Hash: " + item->TorrentHash + "\n";
         res += "id: " + QString::number(item->id) + "\n";
         res += "forumId: " + QString::number(item->ForumId) + "\n";
         res += "forum: " + m_Model->getCategoryText(item->ForumId) + "\n";
-        res += "-----------------------";
+        res += "-----------------------\n";
     }
+    if (!res.isEmpty())
+        res = res.left(res.count() - 24);
     QApplication::clipboard()->setText(res);
 }
 
