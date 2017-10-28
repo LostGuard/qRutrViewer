@@ -23,19 +23,8 @@ MainWindow::MainWindow(QWidget *parent) :
     sizes << h  << ui->splitter->sizeHint().height() - h;
     ui->splitter->setSizes(sizes);
 
-    QListWidgetItem *litem = new QListWidgetItem();
-    litem->setText(" - ");
-    litem->setData(Qt::UserRole, -1);
-    ui->categoryListWidget->insertItem(ui->categoryListWidget->count(), litem);
-    ui->categoryListWidget->setCurrentRow(0);
-    QMap<int, QString> cmap = m_db->getCategories();
-    foreach (int i, cmap.keys())
-    {
-        litem = new QListWidgetItem();
-        litem->setText(cmap[i]);
-        litem->setData(Qt::UserRole, i);
-        ui->categoryListWidget->insertItem(ui->categoryListWidget->count(), litem);
-    }
+    m_categoryMap = m_db->getCategories();
+    updateCategories("");
 
     //progressLabel->setGeometry(this->geometry().topLeft().x()+20, this->geometry().topLeft().y()+160, 550, 350);
     //progressLabel->setFixedHeight(350);
@@ -50,7 +39,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_progressLabel->setMovie(movie);
     movie->start();
 
-    m_Model = new TableModel(this, cmap);
+    m_Model = new TableModel(this, m_categoryMap);
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_actionView_triggered()));
 
     ui->tableView->setModel(m_Model);
@@ -108,7 +97,7 @@ void MainWindow::slotUnfreezeInterface()
 
 void MainWindow::slotShowItem(RuTrItem* item, QString content)
 {
-    ItemViewForm* frm = new ItemViewForm(content);
+    ItemViewForm* frm = new ItemViewForm(content, item->title);
     connect(this, SIGNAL(signalCloseAll()), frm, SLOT(close()));
     frm->show();
 }
@@ -218,6 +207,8 @@ void MainWindow::on_actionCopyHash_triggered()
 
 void MainWindow::on_actionSearchInCategory_triggered()
 {
+    updateCategories("");
+
     QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
     if (mlist.length() > 0)
     {
@@ -232,8 +223,30 @@ void MainWindow::on_actionSearchInCategory_triggered()
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
-     emit signalCloseAll();
-     event->accept();
+    emit signalCloseAll();
+    event->accept();
+}
+
+void MainWindow::updateCategories(QString filter)
+{
+    ui->categoryListWidget->clear();
+
+    QListWidgetItem *litem = new QListWidgetItem();
+    litem->setText(" - ");
+    litem->setData(Qt::UserRole, -1);
+    ui->categoryListWidget->insertItem(ui->categoryListWidget->count(), litem);
+    ui->categoryListWidget->setCurrentRow(0);
+
+    foreach (int i, m_categoryMap.keys())
+    {
+        if (filter.isEmpty() || m_categoryMap[i].contains(filter, Qt::CaseInsensitive))
+        {
+            litem = new QListWidgetItem();
+            litem->setText(m_categoryMap[i]);
+            litem->setData(Qt::UserRole, i);
+            ui->categoryListWidget->insertItem(ui->categoryListWidget->count(), litem);
+        }
+    }
 }
 
 void MainWindow::on_actionCopyMagnet_triggered()
@@ -279,4 +292,9 @@ void MainWindow::on_actionCopyRutrackerURL_triggered()
         res += addr + QString::number(item->id) + "/\n";
     }
     QApplication::clipboard()->setText(res);
+}
+
+void MainWindow::on_categorySearchEdit_textChanged(const QString &arg1)
+{
+    updateCategories(ui->categorySearchEdit->text());
 }

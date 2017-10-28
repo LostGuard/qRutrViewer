@@ -13,7 +13,7 @@ class ItemViewForm : public QWidget
     Q_OBJECT
 
 public:
-    explicit ItemViewForm(QString content, QWidget *parent = 0);
+    explicit ItemViewForm(QString content, QString title, QWidget *parent = 0);
     ~ItemViewForm();
 
 private:

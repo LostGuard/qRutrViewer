@@ -8,10 +8,12 @@
 #include <QFile>
 #endif
 
-ItemViewForm::ItemViewForm(QString content, QWidget *parent) :
+ItemViewForm::ItemViewForm(QString content, QString title, QWidget *parent) :
     QWidget(parent),
     ui(new Ui::ItemViewForm)
 {
+    ui->setupUi(this);
+
     m_ReplaceMap.insert("[br]", "<span class=\"post-br\"><br></span>");
     m_ReplaceMap.insert("[b]", "<span class=\"post-b\">");
     m_ReplaceMap.insert("[/b]", "</span>");
@@ -82,7 +84,7 @@ ItemViewForm::ItemViewForm(QString content, QWidget *parent) :
         {":kk: ", "kak_kino"}, {":-|", "icon_neutral"}, {":search: ", "use_search"},{":offtopic: ", "tr_offtopic"}, {":oldtimer: ", "ppl_oldtimer"}
     };
 
-    ui->setupUi(this);
+    this->setWindowTitle(title);
     ui->webView->settings()->setUserStyleSheetUrl(QUrl("qrc:/styles.css"));
     ui->webView->settings()->setFontFamily(QWebSettings::StandardFont, "Times New Roman");
     ui->webView->settings()->setFontSize(QWebSettings::DefaultFontSize, 16);

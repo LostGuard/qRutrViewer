@@ -50,14 +50,18 @@ private:
     int m_SearchStartIndex = 0;
     int m_MaxItemsView = 500;
     QLabel *m_progressLabel;
+    QMap<int, QString> m_categoryMap;
+
     void startSearch();
     void closeEvent(QCloseEvent *event);
+    void updateCategories(QString filter);
 private slots:
     void slotFreezeInterface();
     void slotUnfreezeInterface();
     void on_actionCopyMagnet_triggered();
     void on_actionGetTorrent_triggered();
     void on_actionCopyRutrackerURL_triggered();
+    void on_categorySearchEdit_textChanged(const QString &arg1);
 };
 
 #endif // MAINWINDOW_H
