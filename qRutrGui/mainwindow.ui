@@ -18,9 +18,13 @@
     <item>
      <layout class="QHBoxLayout" name="horizontalLayout">
       <item>
-       <widget class="QToolButton" name="toolButton">
+       <widget class="QToolButton" name="settingsButton">
         <property name="text">
-         <string>...</string>
+         <string/>
+        </property>
+        <property name="icon">
+         <iconset resource="res.qrc">
+          <normaloff>:/icons/if_Equipment_132786.png</normaloff>:/icons/if_Equipment_132786.png</iconset>
         </property>
        </widget>
       </item>
@@ -124,9 +128,14 @@
    <property name="text">
     <string>Скопировать ссылку на rutracker</string>
    </property>
+   <property name="toolTip">
+    <string>Скопировать ссылку на сайт</string>
+   </property>
   </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="res.qrc"/>
+ </resources>
  <connections/>
 </ui>

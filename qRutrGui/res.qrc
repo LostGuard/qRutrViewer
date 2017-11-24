@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/icons">
         <file>index.ajax-spinner-preloader.gif</file>
+        <file>if_Equipment_132786.png</file>
     </qresource>
     <qresource prefix="/">
         <file>styles.css</file>

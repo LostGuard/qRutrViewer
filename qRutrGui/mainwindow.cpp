@@ -11,7 +11,6 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     m_db = new DataBase();
-
     if(!m_db->init(false))
     {
         QMessageBox::critical(this, "Ошибка инициализации БД", m_db->errorString);
@@ -52,19 +51,25 @@ MainWindow::MainWindow(QWidget *parent) :
 
     m_Model = new TableModel(this, cmap);
     connect(ui->tableView, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(on_actionView_triggered()));
-
+    
     ui->tableView->setModel(m_Model);
     ui->tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->tableView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->tableView, SIGNAL(customContextMenuRequested(QPoint)), SLOT(slotTableCustomMenuRequested(QPoint)));
-    CategoryDelegate* delegate = new CategoryDelegate();
-    ui->tableView->setItemDelegateForColumn(0, delegate);
-    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
 
     connect(this->ui->tableView->horizontalHeader(), SIGNAL(sectionResized(int,int,int)),
             ui->tableView, SLOT(resizeRowsToContents()));
 
     connect(ui->searchEdit, SIGNAL(returnPressed()), this, SLOT(on_searchButton_clicked()));
+    
+    CategoryDelegate* delegate = new CategoryDelegate();
+    ui->tableView->setItemDelegateForColumn(1, delegate);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(3, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(4, QHeaderView::ResizeToContents);
+    //ui->tableView->horizontalHeader()->setSectionResizeMode(5, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::Stretch);
+    slotUpdateColumns();
 }
 
 MainWindow::~MainWindow()
@@ -87,8 +92,8 @@ void MainWindow::startSearch()
     if (ui->categoryListWidget->currentItem())
         catId = ui->categoryListWidget->currentItem()->data(Qt::UserRole).toInt();
     wk->SetSearchWorker(ui->searchEdit->text(), m_SearchStartIndex, m_MaxItemsView, catId, !ui->detailedSearchCheckBox->isChecked());
-    connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*)));
-    connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int)), this, SLOT(slotUnfreezeInterface()));
+    connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int,int)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*, int, int)));
+    connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int,int)), this, SLOT(slotUnfreezeInterface()));
     connect(wk, SIGNAL(signalError(QString)), this, SLOT(slotViewError(QString)));
     connect(wk, SIGNAL(finished()), wk, SLOT(deleteLater()));
     wk->start();
@@ -227,30 +232,67 @@ void MainWindow::on_actionSearchInCategory_triggered()
                 ui->categoryListWidget->setCurrentRow(i);
         on_searchButton_clicked();
     }
-
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
      emit signalCloseAll();
-     event->accept();
+    event->accept();
+}
+
+void MainWindow::slotUpdateColumns()
+{    
+    if (Settings::inst()->value(Settings::ColumnIdView, false).toBool() == true)
+        ui->tableView->setColumnHidden(0, false);
+    else
+        ui->tableView->setColumnHidden(0, true);
+    
+    if (Settings::inst()->value(Settings::ColumnForum, true).toBool() == true)
+        ui->tableView->setColumnHidden(1, false);
+    else
+        ui->tableView->setColumnHidden(1, true);
+    
+    if (Settings::inst()->value(Settings::ColumnSize, false).toBool() == true)
+        ui->tableView->setColumnHidden(3, false);
+    else
+        ui->tableView->setColumnHidden(3, true);
+    
+    if (Settings::inst()->value(Settings::ColumnRegTime, false).toBool() == true)
+        ui->tableView->setColumnHidden(4, false);
+    else
+        ui->tableView->setColumnHidden(4, true);
+    
+    if (Settings::inst()->value(Settings::ColumnHash, false).toBool() == true)
+        ui->tableView->setColumnHidden(5, false);
+    else
+        ui->tableView->setColumnHidden(5, true);
+    
+    int rowsCount = Settings::inst()->value(Settings::MaxTorrentsTableRows, 500).toInt();
+    if (rowsCount != m_MaxItemsView)
+    {
+        m_MaxItemsView = rowsCount;
+        ui->searchButton->click();
+    }
+    else
+    {
+        ui->tableView->resizeRowsToContents();
+    }
 }
 
 void MainWindow::on_actionCopyMagnet_triggered()
 {
     QString res;
-    QStringList strend;
-    QString strstart = "magnet:?xt=urn:btih:";
-    strend << "&tr=http://bt.t-ru.org/ann?magnet";
-    strend << "&tr=http://bt2.t-ru.org/ann?magnet";
-    strend << "&tr=http://bt3.t-ru.org/ann?magnet";
-    strend << "&tr=http://bt4.t-ru.org/ann?magnet";
+    QString strstart = Settings::inst()->value(Settings::MagnetURL, Settings::MagnetURLDefVal).toString();
+    //"&tr=http://bt.t-ru.org/ann?magnet";
+    //"&tr=http://bt2.t-ru.org/ann?magnet";
+    //"&tr=http://bt3.t-ru.org/ann?magnet";
+    //"&tr=http://bt4.t-ru.org/ann?magnet";
 
     QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
     for (int i = 0; i < mlist.length(); ++i)
     {
         RuTrItem *item = m_Model->getItem(mlist[i].row());
-        res += strstart + item->TorrentHash + strend[0] + "\n";
+        res += strstart.replace("#1", item->TorrentHash).replace("#2", QString::number(item->id)) + "\n";
     }
     QApplication::clipboard()->setText(res);
 }
@@ -258,12 +300,12 @@ void MainWindow::on_actionCopyMagnet_triggered()
 void MainWindow::on_actionGetTorrent_triggered()
 {
     QString res;
-    QString addr = "http://itorrents.org/torrent/";
+    QString addr = Settings::inst()->value(Settings::TorrentURL, Settings::TorrentURLDefVal).toString();
     QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
     for (int i = 0; i < mlist.length(); ++i)
     {
         RuTrItem *item = m_Model->getItem(mlist[i].row());
-        res += addr + item->TorrentHash + ".torrent" + "\n";
+        res += addr.replace("#1", item->TorrentHash).replace("#2", QString::number(item->id)) + "\n";
     }
     QApplication::clipboard()->setText(res);
 }
@@ -271,12 +313,21 @@ void MainWindow::on_actionGetTorrent_triggered()
 void MainWindow::on_actionCopyRutrackerURL_triggered()
 {
     QString res;
-    QString addr = "https://rutracker.org/forum/viewtopic.php?t=";
+    QString addr = Settings::inst()->value(Settings::TorrentSite, Settings::TorrentSiteDefVal).toString();
     QModelIndexList mlist = ui->tableView->selectionModel()->selectedRows();
     for (int i = 0; i < mlist.length(); ++i)
     {
         RuTrItem *item = m_Model->getItem(mlist[i].row());
-        res += addr + QString::number(item->id) + "/\n";
+        res += addr.replace("#1", item->TorrentHash).replace("#2", QString::number(item->id)) +  + "/\n";
     }
     QApplication::clipboard()->setText(res);
+}
+
+void MainWindow::on_settingsButton_clicked()
+{
+    SettingsWindow *settingsWnd = new SettingsWindow();
+    connect(settingsWnd, SIGNAL(accepted()), this, SLOT(slotUpdateColumns()));
+    settingsWnd->setModal(true);
+    settingsWnd->setAttribute(Qt::WA_DeleteOnClose, true);
+    settingsWnd->show();
 }
