@@ -12,6 +12,7 @@
 #include "../qRutrXMLConv/database.h"
 #include "databaseworker.h"
 #include "categorydelegate.h"
+#include "settingswindow.h"
 
 namespace Ui {
 class MainWindow;
@@ -42,7 +43,6 @@ private slots:
 signals:
     void signalCloseAll();
 
-
 private:
     Ui::MainWindow *ui;
     DataBase* m_db;
@@ -58,10 +58,12 @@ private:
 private slots:
     void slotFreezeInterface();
     void slotUnfreezeInterface();
+    void slotUpdateColumns();
     void on_actionCopyMagnet_triggered();
     void on_actionGetTorrent_triggered();
     void on_actionCopyRutrackerURL_triggered();
     void on_categorySearchEdit_textChanged(const QString &arg1);
+    void on_settingsButton_clicked();
 };
 
 #endif // MAINWINDOW_H

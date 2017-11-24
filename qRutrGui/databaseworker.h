@@ -35,7 +35,7 @@ protected:
 
 signals:
     void signalError(QString str);
-    void signalSearchFinished(QList<RuTrItem*>* items, int searchTimeMs);
+    void signalSearchFinished(QList<RuTrItem*>* items, int searchTimeMs, int offset);
     void signalGetContentFinished(RuTrItem* item, QString content);
 };
 

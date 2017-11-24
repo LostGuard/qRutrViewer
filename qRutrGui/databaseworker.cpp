@@ -34,7 +34,7 @@ void DataBaseWorker::run()
         if (m_fastSearch)
         {
             m_db->FastSearch(items, m_searchStr, m_offset, m_count, m_categoryId);
-            emit signalSearchFinished(items, 0);
+            emit signalSearchFinished(items, 0, m_offset);
         }
         else
         {
@@ -43,7 +43,7 @@ void DataBaseWorker::run()
             if (!m_searchStr.isEmpty())
                 slist = m_searchStr.split(" ");
             m_db->Search(items, slist, m_offset, m_count, m_categoryId);
-            emit signalSearchFinished(items, 0);
+            emit signalSearchFinished(items, 0, m_offset);
         }
     }
     else if (m_recType == GetContentType)
