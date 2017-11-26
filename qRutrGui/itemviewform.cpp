@@ -1,6 +1,9 @@
 #include "itemviewform.h"
 #include "ui_itemviewform.h"
 #include <QWebFrame>
+#include <QFileDialog>
+#include <QClipboard>
+#include "settings.h"
 
 //#define testbbcode
 
@@ -8,9 +11,8 @@
 #include <QFile>
 #endif
 
-ItemViewForm::ItemViewForm(QString content, QString title, QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::ItemViewForm)
+ItemViewForm::ItemViewForm(RuTrItem *item, QString content, QWidget *parent) :
+    QWidget(parent), ui(new Ui::ItemViewForm), m_item(item), m_content(content)
 {
     ui->setupUi(this);
 
@@ -84,11 +86,11 @@ ItemViewForm::ItemViewForm(QString content, QString title, QWidget *parent) :
         {":kk: ", "kak_kino"}, {":-|", "icon_neutral"}, {":search: ", "use_search"},{":offtopic: ", "tr_offtopic"}, {":oldtimer: ", "ppl_oldtimer"}
     };
 
-    this->setWindowTitle(title);
+    this->setWindowTitle(m_item->title);
     ui->webView->settings()->setUserStyleSheetUrl(QUrl("qrc:/styles.css"));
     ui->webView->settings()->setFontFamily(QWebSettings::StandardFont, "Times New Roman");
     ui->webView->settings()->setFontSize(QWebSettings::DefaultFontSize, 16);
-    ui->webView->setHtml(GetHTML(content));
+    ui->webView->setHtml(GetHTML(m_content));
 }
 
 ItemViewForm::~ItemViewForm()
@@ -254,9 +256,57 @@ QString ItemViewForm::GetHTML(QString content)
         }
     }
 
-    QString fin = "<html lang=\"ru\"><head><meta charset=\"windows-1251\"></head><body class=\"\"><div id=\"page_container\"><div class=\"message td2\">" ;
+    QString fin = "<html lang=\"ru\"><head></head><body class=\"\"><div id=\"page_container\"><div class=\"message td2\">" ;
     fin += "<div class=\"post_head\"></div>";
     fin += "<div class=\"post_body\" id=\"p-0000000\">";
     fin += res + "</div></div></div></body></html>";
     return fin;
+}
+
+void ItemViewForm::on_saveHTMLButton_clicked()
+{
+    QString path = QFileDialog::getSaveFileName(this, "Выберите место сохраниения", m_item->title + ".htm", "*.htm");
+    if (!path.isEmpty())
+    {
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly)) 
+        {
+            QTextStream stream(&file);
+            QString str = ui->webView->page()->mainFrame()->toHtml();
+            str = str.replace("<head>", "<head><link rel=\"stylesheet\" href=\"main.css\">");
+            stream << str;
+            file.close();
+        }
+        file.setFileName(QFileInfo(path).absolutePath() + QDir::separator() + "main.css");
+        if (!file.exists() && file.open(QIODevice::WriteOnly))
+        {
+            QFile cssfile(":/styles.css");
+            cssfile.open(QIODevice::ReadOnly);
+            file.write(cssfile.readAll());
+            file.close();
+        }
+    }
+}
+
+void ItemViewForm::on_saveBBCodeButton_clicked()
+{
+    QString path = QFileDialog::getSaveFileName(this, "Выберите место сохраниения", m_item->title + ".bbcode", "*.bbcode");
+    if (!path.isEmpty())
+    {
+        QFile file(path);
+        if (file.open(QIODevice::WriteOnly)) 
+        {
+            QTextStream stream(&file);
+            stream << m_content;
+            file.close();
+        }
+    }   
+}
+
+void ItemViewForm::on_copySiteURLButton_clicked()
+{
+    QString res;
+    QString addr = Settings::inst()->value(Settings::TorrentSite, Settings::TorrentSiteDefVal).toString();
+    res += addr.replace("#1", m_item->TorrentHash).replace("#2", QString::number(m_item->id)) +  + "/\n";
+    QApplication::clipboard()->setText(res);
 }

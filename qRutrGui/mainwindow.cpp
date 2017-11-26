@@ -102,7 +102,7 @@ void MainWindow::slotUnfreezeInterface()
 
 void MainWindow::slotShowItem(RuTrItem* item, QString content)
 {
-    ItemViewForm* frm = new ItemViewForm(content, item->title);
+    ItemViewForm* frm = new ItemViewForm(item, content);
     connect(this, SIGNAL(signalCloseAll()), frm, SLOT(close()));
     frm->show();
 }

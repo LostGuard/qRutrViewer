@@ -7,8 +7,8 @@ SettingsWindow::SettingsWindow(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->idCheckBox->setChecked(Settings::inst()->value(Settings::ColumnIdView, false).toBool());
-    ui->forumCheckBox->setChecked(Settings::inst()->value(Settings::ColumnForum, false).toBool());
-    ui->sizeCheckBox->setChecked(Settings::inst()->value(Settings::ColumnSize, false).toBool());
+    ui->forumCheckBox->setChecked(Settings::inst()->value(Settings::ColumnForum, true).toBool());
+    ui->sizeCheckBox->setChecked(Settings::inst()->value(Settings::ColumnSize, true).toBool());
     ui->dateCheckBox->setChecked(Settings::inst()->value(Settings::ColumnRegTime, false).toBool());
     ui->hashCheckBox->setChecked(Settings::inst()->value(Settings::ColumnHash, false).toBool());
     
