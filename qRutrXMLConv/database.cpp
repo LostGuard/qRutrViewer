@@ -3,22 +3,22 @@
 #include <QDir>
 #include <QFile>
 #include <QSqlError>
-
+#include <QApplication>
 
 DataBase::DataBase()
 {
-    m_dbpath = "." + QString(QDir::separator());
+    m_dbpath = QApplication::applicationDirPath() + QString(QDir::separator());
 }
 
 DataBase::DataBase(QString pathToDb)
 {
-    if (pathToDb.isEmpty())
-        m_dbpath = "." + QString(QDir::separator());
-    else
+    if (!pathToDb.isEmpty())
+    {
         if (!pathToDb.endsWith(QDir::separator()))
             m_dbpath = pathToDb + QDir::separator();
         else
             m_dbpath = pathToDb;
+    }
 }
 
 DataBase::~DataBase()

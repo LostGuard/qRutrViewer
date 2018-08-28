@@ -1,4 +1,6 @@
 #include "settings.h"
+#include <QApplication>
+#include <QDir>
 
 const QString Settings::WindowState = "WindowState";
 const QString Settings::WindowIsFull = "WindowIsFull";
@@ -20,7 +22,7 @@ const QString Settings::MaxTorrentsTableRows = "MaxTorrentsTableRows";
 
 Settings *Settings::inst()
 {
-    static Settings *inst = new Settings("config.ini", QSettings::IniFormat);
+    static Settings *inst = new Settings(QApplication::applicationDirPath() + QString(QDir::separator()) + "config.ini", QSettings::IniFormat);
     inst->setIniCodec("UTF-8");
     return inst;
 }
