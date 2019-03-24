@@ -55,6 +55,8 @@ private:
     void startSearch();
     void closeEvent(QCloseEvent *event);
     void updateCategories(QString filter);
+
+    QList<int> makeCatList();
 private slots:
     void slotFreezeInterface();
     void slotUnfreezeInterface();

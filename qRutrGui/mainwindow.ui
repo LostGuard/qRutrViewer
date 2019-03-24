@@ -50,6 +50,9 @@
       </item>
       <item>
        <widget class="QCheckBox" name="detailedSearchCheckBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="text">
          <string>Подробный поиск</string>
         </property>
@@ -69,7 +72,11 @@
       <property name="orientation">
        <enum>Qt::Vertical</enum>
       </property>
-      <widget class="QListWidget" name="categoryListWidget"/>
+      <widget class="QListWidget" name="categoryListWidget">
+       <property name="selectionMode">
+        <enum>QAbstractItemView::ExtendedSelection</enum>
+       </property>
+      </widget>
       <widget class="QTableView" name="tableView"/>
      </widget>
     </item>

@@ -19,7 +19,7 @@ public:
     void saveForums(QMap<int, QString>& map);
 
     void Search(QList<RuTrItem*>* result, QStringList& keyWords, int offset, int count, int categoryId = -1);
-    void FastSearch(QList<RuTrItem*>* result, QString keyWords, int offset, int count, int categoryId = -1);
+    void FastSearch(QList<RuTrItem*>* result, QString keyWords, int offset, int count, QList<int> categories);
 
     QString GetContent(RuTrItem* item);
     void resetData();
@@ -35,6 +35,7 @@ private:
     QSqlDatabase m_base_db;
     QSqlDatabase m_content_db;
     QList<RuTrItem*> m_Items;
+    QString MakeStrFromIntList(QList<int> list);
 
     RuTrItem* MakeBaseItem(QSqlQuery* query);
     bool m_saveBase = true;

@@ -80,12 +80,25 @@ void MainWindow::startSearch()
     DataBaseWorker *wk = new DataBaseWorker(m_db);
     if (ui->categoryListWidget->currentItem())
         catId = ui->categoryListWidget->currentItem()->data(Qt::UserRole).toInt();
-    wk->SetSearchWorker(ui->searchEdit->text(), m_SearchStartIndex, m_MaxItemsView, catId, !ui->detailedSearchCheckBox->isChecked());
+    wk->SetSearchWorker(ui->searchEdit->text(), m_SearchStartIndex, m_MaxItemsView, makeCatList(), !ui->detailedSearchCheckBox->isChecked());
     connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int,int)), m_Model, SLOT(slotSearchFinished(QList<RuTrItem*>*, int, int)));
     connect(wk, SIGNAL(signalSearchFinished(QList<RuTrItem*>*,int,int)), this, SLOT(slotUnfreezeInterface()));
     connect(wk, SIGNAL(signalError(QString)), this, SLOT(slotViewError(QString)));
     connect(wk, SIGNAL(finished()), wk, SLOT(deleteLater()));
     wk->start();
+}
+
+QList<int> MainWindow::makeCatList()
+{
+    QList<int> res;
+    int i;
+    foreach (QListWidgetItem* item, ui->categoryListWidget->selectedItems())
+    {
+        i = item->data(Qt::UserRole).toInt();
+        if (i != -1)
+            res.append(i);
+    }
+    return res;
 }
 
 void MainWindow::slotFreezeInterface()

@@ -194,22 +194,33 @@ void DataBase::Search(QList<RuTrItem*>* result, QStringList& keyWords, int offse
     InternalSearch(result, whereStr, offset, count);
 }
 
-void DataBase::FastSearch(QList<RuTrItem*>* result, QString keyWords, int offset, int count, int categoryId)
+void DataBase::FastSearch(QList<RuTrItem*>* result, QString keyWords, int offset, int count, QList<int> categories)
 {//SELECT * FROM rutr_titles  join rutr_base ON rutr_titles.docid = rutr_base.id where rutr_titles.title match "linux windows" and forum_id = 1424 order by id limit 3
     QString whereStr;
 
-    if (!keyWords.isEmpty() || categoryId != -1)
+    if (!keyWords.isEmpty() || categories.length() > 0)
     {
         whereStr += "WHERE ";
         if (!keyWords.isEmpty())
             whereStr += CON_TITLES_TABLE_NAME + ".title " + "match \"" + keyWords.toLower() + "\"" + " and";
-        if (categoryId != -1)
-            whereStr += " forum_id=" + QString::number(categoryId) + " and";
+        if (categories.length() > 0)
+            whereStr += " forum_id in (" + MakeStrFromIntList(categories) + ") and";
 
         whereStr = whereStr.left(whereStr.count() - 4); // remove last 'and'
     }
 
     InternalSearch(result, whereStr, offset, count);
+}
+
+QString DataBase::MakeStrFromIntList(QList<int> list)
+{
+    QString str = "";
+    foreach (int i, list)
+    {
+        str += QString::number(i) + ",";
+    }
+    str = str.left(str.length() - 1);
+    return str;
 }
 
 void DataBase::InternalSearch(QList<RuTrItem*>* result, QString whereStr, int offset, int count)
@@ -291,4 +302,5 @@ void DataBase::setWriteMode(bool writeBase, bool writeContent)
     m_saveBase = writeBase;
     m_saveContent = writeContent;
 }
+
 

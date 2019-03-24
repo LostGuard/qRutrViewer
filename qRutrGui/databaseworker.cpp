@@ -10,13 +10,13 @@ DataBaseWorker::~DataBaseWorker()
 
 }
 
-void DataBaseWorker::SetSearchWorker(QString searchStr, int offset, int count, int category_id, bool fastSearch)
+void DataBaseWorker::SetSearchWorker(QString searchStr, int offset, int count, QList<int> categories, bool fastSearch)
 {
     m_recType = SearchType;
     m_searchStr = searchStr;
     m_offset = offset;
     m_count = count;
-    m_categoryId = category_id;
+    m_categories = categories;
     m_fastSearch = fastSearch;
 }
 
@@ -33,7 +33,7 @@ void DataBaseWorker::run()
         QList<RuTrItem*>* items = new QList<RuTrItem*>;
         if (m_fastSearch)
         {
-            m_db->FastSearch(items, m_searchStr, m_offset, m_count, m_categoryId);
+            m_db->FastSearch(items, m_searchStr, m_offset, m_count, m_categories);
             emit signalSearchFinished(items, 0, m_offset);
         }
         else
@@ -42,7 +42,7 @@ void DataBaseWorker::run()
             QStringList slist;
             if (!m_searchStr.isEmpty())
                 slist = m_searchStr.split(" ");
-            m_db->Search(items, slist, m_offset, m_count, m_categoryId);
+            m_db->Search(items, slist, m_offset, m_count, 0);
             emit signalSearchFinished(items, 0, m_offset);
         }
     }

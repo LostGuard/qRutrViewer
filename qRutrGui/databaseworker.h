@@ -11,7 +11,7 @@ class DataBaseWorker : public QThread
 public:
     DataBaseWorker(DataBase *db);
     ~DataBaseWorker();
-    void SetSearchWorker(QString searchStr, int offset, int count, int category_id, bool fastSearch);
+    void SetSearchWorker(QString searchStr, int offset, int count, QList<int> categories, bool fastSearch);
     void SetRequestContentWorker(RuTrItem *item);
 
 private:
@@ -19,7 +19,7 @@ private:
     QString m_searchStr;
     int m_offset;
     int m_count;
-    int m_categoryId;
+    QList<int> m_categories;
     RuTrItem* m_item;
     bool m_fastSearch;
 
